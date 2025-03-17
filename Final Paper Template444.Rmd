@@ -71,13 +71,10 @@ Since we are interested in efficacy of the vaccine $\psi$, we use the formula $\
 
 \begin{align*}
 L^*(\psi) &= L(g(\psi)) \\
-&= \binom{170}{8} \left( \frac{1 - \psi}{2 - \psi} \right)^8\, \left( 1 - \frac{1 - \psi}{2 - \psi} \right)^{162} \\
-&= \binom{170}{8} \left( \frac{1 - \psi}{2 - \psi} \right)^8\, \left( \frac{1}{2 - \psi} \right) ^ 162 \\
-&= \binom{170}{8} \left( \frac{1 - \psi}{2 - \psi} \right)^{8+162} \\
 &= \binom{170}{8} \frac{(\psi^*-1)^8}{(\psi^*-2)^{170}} \\
 \end{align*}
 
-To get $\hat{\psi}_{mle}$, find the log likelehood function:
+To get $\hat{\psi}_{mle}$, find the log likelihood function:
 
 $$\ell^*(\psi)\;=\;\ln L^*(\psi)\;=\;\ln\bigl[(\psi - 1)^8\bigr]\;-\;\ln\bigl[(\psi - 2)^{170}\bigr]\;=\;8\,\ln(\psi - 1)\;-\;170\,\ln(\psi - 2).$$
 Now find first derivative:
