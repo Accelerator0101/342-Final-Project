@@ -385,8 +385,8 @@ loglik.binom <- function(psi, x, n) {
 
 simulate_W <- function(i) {
   x_star <- rbinom(1, size = n, prob = (1 - psi0) / (2 - psi0))
-
-  psi_star_hat <- (n - 2*x_star)/(n - x_star)
+  p_star_hat <- x_star / n
+  psi_star_hat <- (1 - 2*p_star_hat)/(1 - p_star_hat)
 
   ll_null  <- loglik.binom(psi0, x_star, n)
   ll_alt   <- loglik.binom(psi_star_hat, x_star, n)
