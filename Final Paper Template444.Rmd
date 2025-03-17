@@ -30,19 +30,7 @@ Previous analyses by Polack et al. (2020) indicated a high vaccine efficacy of a
 
 In this paper, we re-evaluate the Pfizer-BioNTech trial data using both Bayesian and Frequentist methods. Our goal is to validate the initial efficacy estimates and examine whether different analytical frameworks yield consistent results. By doing so, we aim to strengthen the evidence base for informed public health decisions and contribute to the statistical rigor of vaccine efficacy assessments.
 
-```{r label = "data_table", eval = TRUE, echo = FALSE}
-pfizer_data <- data.frame(
-  Group = c("BNT162b2", "Placebo", "Total"),
-  Cases = c(8, 162, 170),
-  Sample_Size = c(17411, 17511, 34922)
-)
-
-library(knitr)
-
-kable(pfizer_data, 
-      caption = "Vaccine Efficacy against COVID-19 at least 7 days after second dose in patients without evidence of infection",
-      align = "lcc")
-
+```{r label = "data_table", eval = TRUE, echo = FALSE, fig.width=4, fig.height=3}
 data <- data.frame(
   Group = c("BNT162b2 Vaccine", "Placebo"),
   Cases = c(8, 162),
@@ -72,19 +60,9 @@ Describe the statistical model used.
 ## Likelihood Inference
 
 For likelihood inference, we need to check CI using large number and bootstrap, for p-value, use chi square distribution and empirical p-value
-Assumption check: \
+Assumption check: 
 
-1. Random Assignment: \
-Each participant is randomly assigned to vaccine or placebo. Randomization should ensure that, on average, the two groups are comparable in all characteristics except for the vaccine itself. \
-
-2. No Major Differential Attrition: \
-Over the course of the study, participants in vaccine and placebo arms remain under observation for approximately the same duration, with minimal difference in dropout between the groups. \
-
-3. Identical Probability Within Each group: \
-All participants in the same group share the same probability of infection ($\pi_v$ or $\pi_p$). \
-
-4. Independence of Infection Events: \
-One participant becoming infected does not affect another participant’s risk in any direct way that would violate the binomial assumption. Large and well‐blinded trials in which participants have minimal contact (given), this is satisfied. \
+Random Assignment: Each participant is randomly assigned to vaccine or placebo. Randomization should ensure that, on average, the two groups are comparable in all characteristics except for the vaccine itself. No Major Differential Attrition: Over the course of the study, participants in vaccine and placebo arms remain under observation for approximately the same duration, with minimal difference in dropout between the groups. Identical Probability Within Each group: All participants in the same group share the same probability of infection ($\pi_v$ or $\pi_p$). Independence of Infection Events: One participant becoming infected does not affect another participant’s risk in any direct way that would violate the binomial assumption. Large and well‐blinded trials in which participants have minimal contact (given), this is satisfied. 
 
 In this case, the number of infected individuals in each arm follows the binomial distribution $X \sim binom(n, \pi)$ which is:
 $$L(\pi) = \binom{n}{x}\,\pi^x\,(1 - \pi)^{n - x}$$
@@ -114,8 +92,7 @@ Set it equals to zero to get $\hat{\psi}_{mle}$:
 
 
 $$8\,\frac{1}{\psi - 1}\;-\;170\,\frac{1}{\psi - 2}\; =\;0$$
-Then solve the equation to find $\hat{\psi}_{mle}$. \
-
+Then solve the equation to find $\hat{\psi}_{mle}$. 
 
 To make sure this is a local maximum, find second derivative:
 
@@ -125,7 +102,7 @@ $$\ell''^*(\psi)
 \;+\;
 \frac{170}{(\psi - 2)^2}$$
 
-1. Large sample CI: \
+1. Large sample CI:
 
 To construct a large sample confidence interval estimate for $\psi_0$ at 95%, we still need to find standard error use $I(\hat{\psi})$. 
 $$I(\psi_0) = E_{\psi_0} \left[ -\ell''^*(\psi) \right] = \frac{8}{(\psi_0 - 1)^2} - \frac{170}{(\psi_0 - 2)^2}$$
@@ -140,37 +117,39 @@ $$\hat{\psi}
 \;\pm\;
 z_{0.975}\,\text{SE}(\hat{\psi})$$
 
-2. Bootstrap percentile interval: \
+2. Bootstrap percentile interval: 
+
 To make sure get the accurate conclusion, we choose to also include a bootstrap percentile interval.
 we implement a bootstrap procedure to estimate the distribution of vaccine efficacy. We begin by taking two groups of 0/1 outcomes---one from the vaccine arm and one from the placebo arm---and we sample with replacement from each group 1000 times. For each bootstrap sample, we compute the mean outcome (proportion of “1” events) in both arms, and then calculate vaccine efficacy as 
 \[
 \text{VE} = 1 - \frac{\hat{p}_v}{\hat{p}_p}.
 \]
 By repeating this process and storing each VE estimate, we obtain a bootstrap distribution of VE values, which we can visualize in a histogram or use to derive confidence intervals.
-\
 
-3. P-value: chi square distribution: \
+3. P-value: chi square distribution:
 
 To assess the significance of the estimated parameter $\psi$, we conduct a hypothesis test:
 $$H_0: \psi = 0.3\quad \text{vs.} \quad H_1: \psi \neq 0.3$$
 Two extra standard test statistics are used, the likelihood ratio test statistic is:
 $$\Lambda = \frac{L(\hat{\psi}_0^{mle})}{L(\hat{\psi}_0^{null})}$$
 
-Under $H_0$, the larger the ratio, the stronger is the evidence against $H_0$. \
+Under $H_0$, the larger the ratio, the stronger is the evidence against $H_0$.
 
+The second statistic, Log likelihood ratio, follows a chi-square distribution with one degree of freedom under $H_0$. $W \sim \chi^2_1 = 2 \ln(\Lambda)$. 
 
-The second statistic, Log likelihood ratio, follows a chi-square distribution with one degree of freedom under $H_0$. $W \sim \chi^2_1 = 2 \ln(\Lambda)$. \
+After calculating those statistics, we compute the p-value as $P(\chi^2_1 \ge W)$, to observe if p value is less than 0.05. 
 
-After calculating those statistics, we compute the p-value as $P(\chi^2_1 \ge W)$, to observe if p value is less than 0.05. \
+4. Empirical P-value: 
 
+The second method to find p-value, using a simulation-based approach for a likelihood ratio test. 
 
-4. Empirical P-value: \
+First we set parameters, set the total number of simulations B=1500, other parameters have already demonstrated in CI method. 
 
-The second method to find p-value, using a simulation-based approach for a likelihood ratio test. \
-First we set parameters, set the total number of simulations B=1500, other parameters have already demonstrated in CI method. \
-Second, create a function that computes the log-likelihood $L(\psi)$ for a given $\psi$, which we will later use in simulation. \
-Third, simulate the $W_{obs}$ for B times using random x observed in 170 cases with $\frac{1 - \psi_0}{2 - \psi_0}$. \
-Finally, compare $W_{obs}$ and $\hat{W}$, if one $W_{obs} \ge \hat{W}$, return 1, others return 0, sum together than divide by B, which gives empirical p-value. \
+Second, create a function that computes the log-likelihood $L(\psi)$ for a given $\psi$, which we will later use in simulation. 
+
+Third, simulate the $W_{obs}$ for B times using random x observed in 170 cases with $\frac{1 - \psi_0}{2 - \psi_0}$. 
+
+Finally, compare $W_{obs}$ and $\hat{W}$, if one $W_{obs} \ge \hat{W}$, return 1, others return 0, sum together than divide by B, which gives empirical p-value. 
 
 ## Bayesian Inference
 Detail the Bayesian approach.
@@ -279,11 +258,10 @@ Thus:
 $$P(\psi > 0.3 | t) = P(\pi < \frac{0.7}{1.7} | t)$$
 
 # Results
-Present your findings. 
 
-For Likelihood Inference: \
-1. Large number CI Interval: \
+For Likelihood Inference: 
 
+1. Large number CI Interval:
 ```{r label = "large_CI", eval = TRUE, echo = FALSE}
 psi_0 = 0.3    
 
@@ -294,14 +272,13 @@ psi_mle = 154/162
 CI_high = psi_mle + qnorm(0.975) * sqrt(1/(8/(psi_mle - 1)^2 - n/(psi_mle - 2)^2))
 
 CI_low = psi_mle - 1.96 * sqrt(1/(8/(psi_mle - 1)^2 - n/(psi_mle - 2)^2))
-
-sqrt(1/(8/(psi_mle - 1)^2 - n/(psi_mle - 2)^2))
 ```
 
-We get [0.916, 0.986]. W are 95% confident that $\psi_0$ lies in the range (0.916,0.986) based on the observed data, the results are similar comparing to the 95% CI interval get in the article. This result strongly supports high efficacy and provides a precise estimate with a relatively low margin of error, thanks to the large sample size. \
+We get [0.916, 0.986]. W are 95% confident that $\psi_0$ lies in the range (0.916,0.986) based on the observed data, the results are similar comparing to the 95% CI interval get in the article. This result strongly supports high efficacy and provides a precise estimate with a relatively low margin of error, thanks to the large sample size.
 
-2. Bootstrap percentile interval: \
-```{r label = "bootstrap_CI", eval = TRUE, echo = FALSE}
+2. Bootstrap percentile interval:
+
+```{r label = "bootstrap_CI", eval = TRUE, echo = FALSE, warning = FALSE, fig.width=2.5, fig.height=2.5}
 x_v <- 8       
 n_v <- 17411   
 
@@ -338,7 +315,6 @@ for(b in 1:B){
 
 # 95% percentile CI:
 CI_boot <- quantile(VE_boot, c(0.025, 0.975))
-CI_boot
 
 hist(
   VE_boot, breaks = 30,
@@ -346,13 +322,33 @@ hist(
   xlab = "Vaccine Efficacy (VE)",
   xlim = c(0.87, 1.0))
 
+loglik.binom <- function(psi, x, n) {
+  if(psi >= 1) return(NA_real_)
+  pi <- (1 - psi) / (2 - psi)
+  ll_val <- lchoose(n, x) + x*log(pi) + (n - x)*log(1 - pi)
+  
+  return(ll_val)
+}
+
+ml.binom <- maxLik2(
+  loglik = loglik.binom,
+  start  = 0.3,
+  x      = 8,
+  n      = 170
+) 
+
+plot(ml.binom) +
+  labs(
+    title    = "Second order approximation\n to Binomial Likelihood",
+    subtitle = "n = 170, x = 8",
+    x        = expression(psi)
+  )
 ```
+
 From the bootstrap distribution, the 95% confidence interval for vaccine efficacy runs approximately from 91.5% to 98.3%, indicating that most resampled estimates lie in this high‐efficacy range. The histogram shows a fairly tight clustering around the mid‐90% mark, with few bootstrap replicates suggesting efficacy below about 90% or above 99%. This suggests that, given the observed data, there is strong evidence that the vaccine’s true efficacy is very likely above 90%.
 By conducting boosttrap 
 
-
-3. P-value (chi square distribution): \
-
+3. P-value (chi square distribution):
 ```{r label = "p_chi", eval = TRUE, echo = FALSE}
 peaky_head = ((psi_mle - 1)^8/(psi_mle - 2)^(170)) / ((psi_0 - 1)^8 / (psi_0 - 2)^(170))
 
@@ -362,9 +358,8 @@ p_chi = pchisq(w, 1, lower.tail =FALSE)
 ```
 After calculation, p-value is `r p_chi`, which is extremely small compared to 0.05, in this case, we reject $H_0$ and claim that the true $\psi_0$ is significantly different from 0.3.
 
-4. Empirical P-value: \
-
-```{r label = "emp_p", eval = TRUE, echo = FALSE}
+4. Empirical P-value:
+```{r label = "emp_p", eval = TRUE, echo = FALSE, fig.width=3.5, fig.height=2.5}
 set.seed(414)
 
 B <- 1500
@@ -380,8 +375,6 @@ loglik.binom <- function(psi, x, n) {
   
   return(ll_val)
 }
-
-
 
 simulate_W <- function(i) {
   x_star <- rbinom(1, size = n, prob = (1 - psi0) / (2 - psi0))
@@ -399,7 +392,6 @@ null_sim <- lapply(1:B, simulate_W)
 Wstar <- c(unlist(null_sim))
 
 emp_p_value <- sum(Wstar >= w)/B
-cat("Empirical P value", emp_p_value)
 
 hist(Wstar, breaks=30, main="Histogram of W* under H0", xlab="W*")
 abline(v = w, col="red", lwd=2)
@@ -407,10 +399,11 @@ abline(v = w, col="red", lwd=2)
 
 Both the chi-square based p-value and the empirical p-value are extremely small or essentially zero. This indicates that the observed data are highly inconsistent with the null hypothesis $\psi = 0.3$. In other words, the likelihood of obtaining such extreme test statistics under the assumption that $\psi = 0.3$ is approximately 0. Given that the maximum likelihood estimate of $\psi$ is approximately 0.95, we conclude that the data provide extremely strong evidence against the null hypothesis, and strongly support that the true value of $\psi$ is much higher than 0.3. This result suggests a very high efficacy compared to the 30% efficacy. 
 
-For Bayesian Inference: \
+For Bayesian Inference:
 
-Prior and Posterior Distribution of Vaccine Efficacy (Pi): \
-```{r label = "PiDis", eval = TRUE, echo = FALSE, fig.width=5, fig.height=3}
+Prior and Posterior Distribution of Vaccine Efficacy (Pi):
+
+```{r label = "PiDis", eval = TRUE, echo = FALSE, fig.width=4, fig.height=2.5}
 library(ggplot2)
 library(LearnBayes)
 
@@ -447,12 +440,13 @@ ggplot() +
     y        = "PDF"
   ) +
   theme_minimal()
-
 ```
+
 This graph shows the Prior and Posterior distribution of $\pi$ in a Bayesian Model for vaccine efficacy. According to the graph, the red curve represents the prior distribution of $\pi$, it shows that the peak near $\pi=0$, suggesting the prior assumnes a low infection probability and the long right tail indicates some uncertainty. The blue curve represents the posterior distribution of $\pi$. Since the posterior concentrates at small values of $\pi$, it implies that the infection probability is lower in the vaccinated group, which indirectly suggests high vaccine efficacy.
 
-Posterior Distribution of Vaccine Efficacy (Psi): \
-```{r label = "PsiDIS", eval = TRUE, echo = FALSE, fig.width=5, fig.height=3}
+Posterior Distribution of Vaccine Efficacy (Psi):
+
+```{r label = "PsiDIS", eval = TRUE, echo = FALSE, fig.width=4, fig.height=2.5}
 set.seed(414)
 M <- 1000
 pi_samples <- rbeta(M, shape1 = alpha_post, shape2 = beta_post)
@@ -469,19 +463,18 @@ ggplot(psi_df, aes(x = psi_samples)) +
     y        = "Density"
   ) +
   theme_minimal()
-
 ```
+
 This graph represents the posterior distribution of vaccine efficacy $\psi$. The posterior distribution is unimodel and the peak is occurs around $\psi \approx 0.95$, suggesting that the most probable vaccine efficacy is about $95\%$. This distribution is skewed to the left.
 
-Median of the Posterior Distribution: \
+Median of the Posterior Distribution:
 ```{r label = "median", eval = TRUE, echo = FALSE}
 pi_median   <- median(pi_samples)
 psi_median <- (1 - 2 * pi_median) / (1 - pi_median)
-psi_median
 ```
 The posterior median of $\psi$ is 0.9473. It is much greater than 0.3 for vaccine efficacy, the Bayesian model suggests a high probability that the vaccine is effective.
 
-Quantile-Based Credible Interval: \
+Quantile-Based Credible Interval:
 ```{r label = "quan_CI", eval = TRUE, echo = FALSE}
 set.seed(414)
 M <- 1000
@@ -493,13 +486,11 @@ psi_lower <- (1 - 2 * pi_CI[2]) / (1 - pi_CI[2])
 psi_upper <- (1 - 2 * pi_CI[1]) / (1 - pi_CI[1])
 
 psi_CI <- c(psi_lower, psi_upper)
-names(psi_CI) <- c("2.5%", "97.5%")
-print(psi_CI)
 ```
 Based on the output showing above, there is a $95\%$ probability that the true vaccine BNT162b2 efficacy $\psi$ lies within $90.2\%$ to $97.6\%$, given the observed data and prior beliefs.
 
-HPDI Credible Interval: \
-```{r label = "HDPI_CI", eval = TRUE, echo = FALSE}
+HPDI Credible Interval:
+```{r label = "HDPI_CI", eval = TRUE, echo = FALSE, warning = FALSE}
 library(HDInterval)
 set.seed(414)
 M <- 1000
@@ -511,14 +502,12 @@ psi_lower <- (1 - 2 * pi_HPDI[2]) / (1 - pi_HPDI[2])
 psi_upper <- (1 - 2 * pi_HPDI[1]) / (1 - pi_HPDI[1]) 
 psi_HPDI <- c(psi_lower, psi_upper)
 names(psi_HPDI) <- c("lower", "upper")
-psi_HPDI
 ```
 Based on the output showing above, the credible interval which was computed using HPDI stating that there is a $95\%$ probability that the true vaccine BNT162b2 efficacy $\psi$ lies within $90.9\%$ to $97.9\%$, given the observed data and prior beliefs. The HPDI is slightly narrower than the quantile-based interval because it excludes low-density tail regions. For this question, we believe that HPDI is useful since the posterior distribution for $\psi$ is skewed to the left, by viewing the graph "Posterior Distribution of Vaccine Efficacy (Psi)" graph above., it will provides a more precise credible interval.
 
-P-value: \
+P-value:
 ```{r label = "prob_0.3", eval = TRUE, echo = FALSE}
 prob_psi_gt_0.3 <- pbeta(0.7/1.7, shape1 = alpha_post, shape2 = beta_post)
-prob_psi_gt_0.3
 ```
 Since $P(\psi>0.30) \approx 1$, we strongly reject $H_0$. There is overwhelming evidence that the vaccine BNT162b2 is significantly more effective than $30\%$.
 
@@ -530,8 +519,8 @@ Practically, these results mean that the vaccine provides strong protection agai
 In summary, the evidence from both statistical methods supports the claim that the vaccine is highly effective. This strong agreement enhances our confidence in the conclusion and supports public health recommendations for the vaccine.
 
 # Bibliography
-
 2.Gelman, A., Carlin, J. B., Stern, H. S., Dunson, D. B., Vehtari, A., & Rubin, D. B. (2013). Bayesian Data Analysis (3rd ed.). Chapman and Hall/CRC.
+
 3.Venu, A. X. (2024). Highest Posterior Density Intervals As Analogues to Profile Likelihood Ratio Confidence Intervals for Modes of Unimodal Distributions. arXiv preprint arXiv:2412.06528.
 
 # Appendix
