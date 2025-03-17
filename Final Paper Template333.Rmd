@@ -55,25 +55,70 @@ ggplot(data, aes(x = Group, y = Infection_Rate, fill = Group)) +
 # Statistical Methods
 
 ## Model
-Describe the statistical model used.
+
+Assumptions check:
+
+Random Assignment: Each participant is randomly assigned to vaccine or placebo. Randomization should ensure that, on average, the two groups are comparable in all characteristics except for the vaccine itself. No Major Differential Attrition: Over the course of the study, participants in vaccine and placebo arms remain under observation for approximately the same duration, with minimal difference in dropout between the groups. Identical Probability Within Each group: All participants in the same group share the same probability of infection ($\pi_v$ or $\pi_p$). Independence of Infection Events: One participant becoming infected does not affect another participant’s risk in any direct way that would violate the binomial assumption. Large and well‐blinded trials in which participants have minimal contact (given), this is satisfied. 
+
+Random Variables
+
+We have two groups in a clinical trial:
+Vaccine group (e.g., BNT162b2) of size $n_v$. Let $X_v$ be the number of infected individuals in this group.
+
+Placebo group of size $n_p$. Let $X_p$ be the number of infected individuals in this group.
+
+Hence, we assume
+\[
+X_v \sim \text{Binomial}(n_v, p_v), 
+\quad
+X_p \sim \text{Binomial}(n_p, p_p),
+\]
+where $p_v$ and $p_p$ are the true (unknown) infection probabilities in the vaccine and placebo arms, respectively.
+
+Statistical Model
+
+
+Binomial Likelihoods: Each arm's number of infections is modeled with a Binomial distribution, reflecting the idea that each of the $n_v$ or $n_p$ individuals independently has some probability ($p_v$ or $p_p$) of becoming infected.
+Parameter of Interest: The paper defines
+    \[
+      \pi \;=\; \frac{p_v}{\,p_v + p_p\,}.
+    \]
+    Equivalently, $\pi$ can be interpreted as the fraction of all infections (across both arms) that occur in the vaccine arm.
+Vaccine Efficacy: Denoted by $\psi$, it is given by
+    \[
+      \psi
+      \;=\;
+      \frac{1 - 2\pi}{\,1 - \pi\,}.
+    \]
+    This transformation is chosen so that $\psi = 0$ if $p_v = p_p$, and it increases toward 1 as $p_v$ becomes small relative to $p_p$.
+
+Hypothesis of Interest
+
+A common scientific question is whether the vaccine confers a certain minimum level of efficacy. For instance, ``Is $\psi > 0.30$?'' That is, does vaccine efficacy exceed 30\%? Formally, one might test:
+\[
+H_0: \psi \le 0.30
+\quad \text{vs.} \quad
+H_1: \psi > 0.30.
+\]
+In practice, the paper examines whether the 95\% credible interval for $\psi$ lies above 30\%.
+
+Binomial Likelihood
+
+Let $T$ be the number of infections in the vaccine arm. Then
+\[
+T \;\big|\; \pi \;\sim\; \text{Binomial}(N, \pi),
+\]
+where $N = 170$ is the total number of infected individuals. In the observed data, $T = 8$.
+
 
 ## Likelihood Inference
 
 For likelihood inference, we need to check CI using large number and bootstrap, for p-value, use chi square distribution and empirical p-value
-Assumption check: 
 
-Random Assignment: Each participant is randomly assigned to vaccine or placebo. Randomization should ensure that, on average, the two groups are comparable in all characteristics except for the vaccine itself. No Major Differential Attrition: Over the course of the study, participants in vaccine and placebo arms remain under observation for approximately the same duration, with minimal difference in dropout between the groups. Identical Probability Within Each group: All participants in the same group share the same probability of infection ($\pi_v$ or $\pi_p$). Independence of Infection Events: One participant becoming infected does not affect another participant’s risk in any direct way that would violate the binomial assumption. Large and well‐blinded trials in which participants have minimal contact (given), this is satisfied. 
-
-In this case, the number of infected individuals in each arm follows the binomial distribution $X \sim binom(n, \pi)$ which is:
-$$L(\pi) = \binom{n}{x}\,\pi^x\,(1 - \pi)^{n - x}$$
-
-Since we are interested in efficacy of the vaccine $\psi$, we use the formula $\pi = \frac{1 - \psi}{2 - \psi} = g(\psi)$, n is the number of total case = 170, and x is the number of success of vaccine (got infected in vaccine group) = 8. Now we can set up the likelihood function: 
+Set up the likelihood function: 
 
 \begin{align*}
 L^*(\psi) &= L(g(\psi)) \\
-&= \binom{170}{8} \left( \frac{1 - \psi}{2 - \psi} \right)^8\, \left( 1 - \frac{1 - \psi}{2 - \psi} \right)^{162} \\
-&= \binom{170}{8} \left( \frac{1 - \psi}{2 - \psi} \right)^8\, \left( \frac{1}{2 - \psi} \right) ^ 162 \\
-&= \binom{170}{8} \left( \frac{1 - \psi}{2 - \psi} \right)^{8+162} \\
 &= \binom{170}{8} \frac{(\psi^*-1)^8}{(\psi^*-2)^{170}} \\
 \end{align*}
 
@@ -128,16 +173,11 @@ By repeating this process and storing each VE estimate, we obtain a bootstrap di
 
 3. P-value: chi square distribution:
 
-To assess the significance of the estimated parameter $\psi$, we conduct a hypothesis test:
-$$H_0: \psi = 0.3\quad \text{vs.} \quad H_1: \psi \neq 0.3$$
 Two extra standard test statistics are used, the likelihood ratio test statistic is:
 $$\Lambda = \frac{L(\hat{\psi}_0^{mle})}{L(\hat{\psi}_0^{null})}$$
+Under $H_0$, the larger the ratio, the stronger is the evidence against $H_0$. The second statistic, Log likelihood ratio, follows a chi-square distribution with one degree of freedom under $H_0$. $W \sim \chi^2_1 = 2 \ln(\Lambda)$. 
 
-Under $H_0$, the larger the ratio, the stronger is the evidence against $H_0$.
-
-The second statistic, Log likelihood ratio, follows a chi-square distribution with one degree of freedom under $H_0$. $W \sim \chi^2_1 = 2 \ln(\Lambda)$. 
-
-After calculating those statistics, we compute the p-value as $P(\chi^2_1 \ge W)$, to observe if p value is less than 0.05. 
+After calculating $W$, we compute the p-value as $P(\chi^2_1 \ge W)$, to observe if p value is less than 0.05. 
 
 4. Empirical P-value: 
 
@@ -152,57 +192,6 @@ Third, simulate the $W_{obs}$ for B times using random x observed in 170 cases w
 Finally, compare $W_{obs}$ and $\hat{W}$, if one $W_{obs} \ge \hat{W}$, return 1, others return 0, sum together than divide by B, which gives empirical p-value. 
 
 ## Bayesian Inference
-Detail the Bayesian approach.
-
-Random Variables
-
-We have two groups in a clinical trial:
-Vaccine group (e.g., BNT162b2) of size $n_v$. Let $X_v$ be the number of infected individuals in this group.
-
-Placebo group of size $n_p$. Let $X_p$ be the number of infected individuals in this group.
-
-Hence, we assume
-\[
-X_v \sim \text{Binomial}(n_v, p_v), 
-\quad
-X_p \sim \text{Binomial}(n_p, p_p),
-\]
-where $p_v$ and $p_p$ are the true (unknown) infection probabilities in the vaccine and placebo arms, respectively.
-
-Statistical Model
-
-
-Binomial Likelihoods: Each arm's number of infections is modeled with a Binomial distribution, reflecting the idea that each of the $n_v$ or $n_p$ individuals independently has some probability ($p_v$ or $p_p$) of becoming infected.
-Parameter of Interest: The paper defines
-    \[
-      \pi \;=\; \frac{p_v}{\,p_v + p_p\,}.
-    \]
-    Equivalently, $\pi$ can be interpreted as the fraction of all infections (across both arms) that occur in the vaccine arm.
-Vaccine Efficacy: Denoted by $\psi$, it is given by
-    \[
-      \psi
-      \;=\;
-      \frac{1 - 2\pi}{\,1 - \pi\,}.
-    \]
-    This transformation is chosen so that $\psi = 0$ if $p_v = p_p$, and it increases toward 1 as $p_v$ becomes small relative to $p_p$.
-
-Hypothesis of Interest
-
-A common scientific question is whether the vaccine confers a certain minimum level of efficacy. For instance, ``Is $\psi > 0.30$?'' That is, does vaccine efficacy exceed 30\%? Formally, one might test:
-\[
-H_0: \psi \le 0.30
-\quad \text{vs.} \quad
-H_1: \psi > 0.30.
-\]
-In practice, the paper examines whether the 95\% credible interval for $\psi$ lies above 30\%.
-
-Binomial Likelihood
-
-Let $T$ be the number of infections in the vaccine arm. Then
-\[
-T \;\big|\; \pi \;\sim\; \text{Binomial}(N, \pi),
-\]
-where $N = 170$ is the total number of infected individuals. In the observed data, $T = 8$.
 
 Beta Prior
 
