@@ -225,15 +225,11 @@ In Bayesian analysis, we use credible intervals (CIs) instead of traditional fre
 A $100(1-\alpha)\%$ credible interval for a parameter $\pi$ is an interval [a,b] such that:
 $$P(a \leq \pi \leq b | data) = 1 - \alpha$$ \
 Using the beta posterior distribution, we could compute a $95\%$ credible interval by extract the 2.5th and 97.5th percentiles \
-$$\pi_{lower} = Q_{0.025}(\pi)$$
-$$\pi_{upper} = Q_{0.975}(\pi)$$
+$$\pi_{lower} = Q_{0.025}(\pi), \pi_{upper} = Q_{0.975}(\pi)$$
 where $Q_{p}(\pi)$ is the quantile function.\
 We could use the function "quantile()" to compute a Bayesian credible interval by extracting the $2.5\%$ and $97.5\%$ quantiles if the distribution is not high skewed.\
-Then, since $\psi$ is transformed from $\pi$ using:
-$$\psi_{samples} = \frac{1-2\pi_{samples}}{1-\pi_{samples}}$$
-We transform the credible interval bounds for $\psi$:
-$$\psi_{lower} = \frac{1-2\pi_{upper}}{1-\pi_{upper}}$$
-$$\psi_{upper} = \frac{1-2\pi_{lower}}{1-\pi_{lower}}$$
+We transform the credible interval bounds for $\psi$ based on the transformation function:
+$$\psi_{lower} = \frac{1-2\pi_{upper}}{1-\pi_{upper}}, \psi_{upper} = \frac{1-2\pi_{lower}}{1-\pi_{lower}}$$
 Due to the monotonicity and transformation properties of the function.
 
 The highest Posterior Density Interval (HPDI) is an alternative to the quantile-based credible interval. It often preferred when the posterior distribution is asymmetric or skewed.((Venu, 2024))\
