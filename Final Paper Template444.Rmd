@@ -237,11 +237,11 @@ g(\pi) \;=\; \text{Beta}(\alpha, \beta)
 \]
 Here, $\alpha = 0.700102$ and $\beta = 1$.
 
-1. Posterior distribution of $\pi$:
+Posterior distribution of $\pi$:
 $$h(\pi | t) = Beta(\alpha + 8, \beta + 170 - 8)$$
-We assmuse the posterior also follows Beta distribution based on the Theorem 13.2: Suppose $X \sim Binom(n,\pi)$ and we assume that $\pi$ follows a Beta distribution with shape parameters $\alpha$ and $\beta$. Then the posterior distribution of $\pi$ is also a Beta distribution with shape parameters $\alpha + x$ and $\beta + n-x$ where x is the observed value for X. Where x = 8, n = 170. \
+We assmuse the posterior also follows Beta distribution based on the Theorem 13.2 ((Gelman et al., 2013)): Suppose $X \sim Binom(n,\pi)$ and we assume that $\pi$ follows a Beta distribution with shape parameters $\alpha$ and $\beta$. Then the posterior distribution of $\pi$ is also a Beta distribution with shape parameters $\alpha + x$ and $\beta + n-x$ where x is the observed value for X. Where x = 8, n = 170. For the posterior distribution, we do not compute it analytically but rather use sampling (Monte Carlo methods) to generates 1000 samples to approximate it. \
 
-2.$95\%$ CI for $\psi$ when asymmetric: \
+$95\%$ CI for $\psi$ when asymmetric: \
 In Bayesian analysis, we use credible intervals (CIs) instead of traditional frequentist confidence intervals.\
 A $100(1-\alpha)\%$ credible interval for a parameter $\pi$ is an interval [a,b] such that:
 $$P(a \leq \pi \leq b | data) = 1 - \alpha$$ \
@@ -252,31 +252,31 @@ where $Q_{p}(\pi)$ is the quantile function.\
 We could use the function "quantile()" to compute a Bayesian credible interval by extracting the $2.5\%$ and $97.5\%$ quantiles if the distribution is not high skewed.\
 Then, since $\psi$ is transformed from $\pi$ using:
 $$\psi_{samples} = \frac{1-2\pi_{samples}}{1-\pi_{samples}}$$
-We transform the credible interval bounds for $\psi$: \
+We transform the credible interval bounds for $\psi$:
 $$\psi_{lower} = \frac{1-2\pi_{upper}}{1-\pi_{upper}}$$
 $$\psi_{upper} = \frac{1-2\pi_{lower}}{1-\pi_{lower}}$$
 Due to the monotonicity and transformation properties of the function.
 
-The highest Posterior Density Interval (HPDI) is an alternative to the quantile-based credible interval. It often preferred when the posterior distribution is asymmetric or skewed.\
+The highest Posterior Density Interval (HPDI) is an alternative to the quantile-based credible interval. It often preferred when the posterior distribution is asymmetric or skewed.((Venu, 2024))\
 Given the posterior distribution h($\pi | t$) = Beta($\alpha + 8$, $\beta + 170 - 8$), the HPDI is the shortest interval $[\alpha, \beta]$ such that: 
 $$P(\alpha \leq \pi \leq \beta|t) = credMass$$
 Then, compute the $95\%$ HPDI for $\pi$ using "hdi()" function from the HDInterval. \
 Then, using the given transformation function from $\pi$ to $\psi$ to compute the $95\%$ HPDI for $\psi$.
 
-3. Bayesian P-value \
+Bayesian P-value \
 We need to compute the posterior probability that the vaccine efficacy $\psi$ exceeds $30\%$: \
 Null Hypothesis ($H_0$): $H_0 : \psi \leq 0.30$ \
 Alternative Hypothesis ($H_1$): $H_1 : \psi > 0.30$ \
 We could using the p-value to test whether we can reject $H_0$ at a given significance level(0.05). We calculate:
-$$P(\psi > 0.3)$$
+$$P(\psi > 0.3 | t)$$
 Considering of transformation, we can get:
-$$P(\psi > 0.3) = P(\frac{1-2\pi}{1-\pi} > 0.3)$$
+$$P(\psi > 0.3 | t) = P(\frac{1-2\pi}{1-\pi} > 0.3)$$
 we solve the inquality :
 $$\frac{1-2\pi}{1-\pi}>0.3$$
 solving for $\pi$:
 $$\pi < \frac{0.7}{1.7}$$
 Thus:
-$$P(\psi > 0.3) = P(\pi < \frac{0.7}{1.7})$$
+$$P(\psi > 0.3 | t) = P(\pi < \frac{0.7}{1.7} | t)$$
 
 # Results
 Present your findings. 
@@ -385,8 +385,8 @@ loglik.binom <- function(psi, x, n) {
 
 simulate_W <- function(i) {
   x_star <- rbinom(1, size = n, prob = (1 - psi0) / (2 - psi0))
-  p_star_hat <- x_star / n
-  psi_star_hat <- (1 - 2*p_star_hat)/(1 - p_star_hat)
+
+  psi_star_hat <- (n - 2*x_star)/(n - x_star)
 
   ll_null  <- loglik.binom(psi0, x_star, n)
   ll_alt   <- loglik.binom(psi_star_hat, x_star, n)
@@ -409,8 +409,8 @@ Both the chi-square based p-value and the empirical p-value are extremely small 
 
 For Bayesian Inference: \
 
-1. Prior and Posterior Distribution of Vaccine Efficacy (Pi): \
-```{r label = "PiDis", eval = TRUE, echo = FALSE}
+Prior and Posterior Distribution of Vaccine Efficacy (Pi): \
+```{r label = "PiDis", eval = TRUE, echo = FALSE, fig.width=5, fig.height=3}
 library(ggplot2)
 library(LearnBayes)
 
@@ -451,8 +451,8 @@ ggplot() +
 ```
 This graph shows the Prior and Posterior distribution of $\pi$ in a Bayesian Model for vaccine efficacy. According to the graph, the red curve represents the prior distribution of $\pi$, it shows that the peak near $\pi=0$, suggesting the prior assumnes a low infection probability and the long right tail indicates some uncertainty. The blue curve represents the posterior distribution of $\pi$. Since the posterior concentrates at small values of $\pi$, it implies that the infection probability is lower in the vaccinated group, which indirectly suggests high vaccine efficacy.
 
-1. Posterior Distribution of Vaccine Efficacy (Psi): \
-```{r label = "PsiDIS", eval = TRUE, echo = FALSE}
+Posterior Distribution of Vaccine Efficacy (Psi): \
+```{r label = "PsiDIS", eval = TRUE, echo = FALSE, fig.width=5, fig.height=3}
 set.seed(414)
 M <- 1000
 pi_samples <- rbeta(M, shape1 = alpha_post, shape2 = beta_post)
@@ -473,7 +473,15 @@ ggplot(psi_df, aes(x = psi_samples)) +
 ```
 This graph represents the posterior distribution of vaccine efficacy $\psi$. The posterior distribution is unimodel and the peak is occurs around $\psi \approx 0.95$, suggesting that the most probable vaccine efficacy is about $95\%$. This distribution is skewed to the left.
 
-1. Quantile-Based Credible Interval: \
+Median of the Posterior Distribution: \
+```{r label = "median", eval = TRUE, echo = FALSE}
+pi_median   <- median(pi_samples)
+psi_median <- (1 - 2 * pi_median) / (1 - pi_median)
+psi_median
+```
+The posterior median of $\psi$ is 0.9473. It is much greater than 0.3 for vaccine efficacy, the Bayesian model suggests a high probability that the vaccine is effective.
+
+Quantile-Based Credible Interval: \
 ```{r label = "quan_CI", eval = TRUE, echo = FALSE}
 set.seed(414)
 M <- 1000
@@ -490,7 +498,7 @@ print(psi_CI)
 ```
 Based on the output showing above, there is a $95\%$ probability that the true vaccine BNT162b2 efficacy $\psi$ lies within $90.2\%$ to $97.6\%$, given the observed data and prior beliefs.
 
-2. HPDI Credible Interval: \
+HPDI Credible Interval: \
 ```{r label = "HDPI_CI", eval = TRUE, echo = FALSE}
 library(HDInterval)
 set.seed(414)
@@ -507,7 +515,7 @@ psi_HPDI
 ```
 Based on the output showing above, the credible interval which was computed using HPDI stating that there is a $95\%$ probability that the true vaccine BNT162b2 efficacy $\psi$ lies within $90.9\%$ to $97.9\%$, given the observed data and prior beliefs. The HPDI is slightly narrower than the quantile-based interval because it excludes low-density tail regions. For this question, we believe that HPDI is useful since the posterior distribution for $\psi$ is skewed to the left, by viewing the graph "Posterior Distribution of Vaccine Efficacy (Psi)" graph above., it will provides a more precise credible interval.
 
-3. P-value: \
+P-value: \
 ```{r label = "prob_0.3", eval = TRUE, echo = FALSE}
 prob_psi_gt_0.3 <- pbeta(0.7/1.7, shape1 = alpha_post, shape2 = beta_post)
 prob_psi_gt_0.3
@@ -521,22 +529,10 @@ In the Bayesian analysis, we used a Beta prior for the infection probability and
 Practically, these results mean that the vaccine provides strong protection against COVID-19. The narrow intervals and very small p-values indicate that we can be confident in these results. While the Bayesian method offers the advantage of providing direct probability statements and handling uncertainty flexibly, the frequentist method benefits from straightforward p-value testing and well-established bootstrap techniques. Each method has its strengths and weaknesses; however, the convergence of the findings from both approaches enhances our confidence in the conclusions drawn regarding the vaccine’s high efficacy.
 In summary, the evidence from both statistical methods supports the claim that the vaccine is highly effective. This strong agreement enhances our confidence in the conclusion and supports public health recommendations for the vaccine.
 
-
-
-
-
-
-
-
 # Bibliography
 
-Brown, B. (2024). *Lecture Title*. Lecture slides, Course Name, University Name.
-
-Doe, J. (2020). Title of the Paper. *Journal Name*, 12(3), 45-67.
-
-Last, F., & Last, F. (2025). *Book Title*. Publisher.
-
-Smith, A., & Johnson, C. (2023). *Title of the Online Article*. Retrieved from https://www.example.com.
+2.Gelman, A., Carlin, J. B., Stern, H. S., Dunson, D. B., Vehtari, A., & Rubin, D. B. (2013). Bayesian Data Analysis (3rd ed.). Chapman and Hall/CRC.
+3.Venu, A. X. (2024). Highest Posterior Density Intervals As Analogues to Profile Likelihood Ratio Confidence Intervals for Modes of Unimodal Distributions. arXiv preprint arXiv:2412.06528.
 
 # Appendix
 
