@@ -544,27 +544,27 @@ In summary, the evidence from both statistical methods supports the claim that t
 ```
 
 ### Code to visualize Prior and Posterior Distribution of Vaccine Efficacy (Pi)
-```{r ref.label = "PiDis", eval = FALSE, echo = FALSE}
+```{r ref.label = "PiDis", eval = FALSE}
 ```
 
 ### Code to visualize Posterior Distribution of Vaccine Efficacy (Psi)
-```{r ref.label = "PsiDIS", eval = FALSE, echo = FALSE}
+```{r ref.label = "PsiDIS", eval = FALSE}
 ```
 
 ### Code to calculate the median of posterior (Psi)
-```{r ref.label = "median", eval = FALSE, echo = FALSE}
+```{r ref.label = "median", eval = FALSE}
 ```
 
 ### Code to find quantile-based credible interval of posterior (Psi)
-```{r ref.label = "quan_CI", eval = FALSE, echo = FALSE}
+```{r ref.label = "quan_CI", eval = FALSE}
 ```
 
 ### Code to find HPDI credible interval of posterior (Psi)
-```{r ref.label = "HDPI_CI", eval = FALSE, echo = FALSE, warning = FALSE}
+```{r ref.label = "HDPI_CI", eval = FALSE, warning = FALSE}
 ```
 
 ### Code to find p-value of posterior (Psi)
-```{r ref.label = "prob_0.3", eval = FALSE, echo = FALSE}
+```{r ref.label = "prob_0.3", eval = FALSE}
 ```
 
 ## Proofs
