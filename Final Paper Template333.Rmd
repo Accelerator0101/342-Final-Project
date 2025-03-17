@@ -113,7 +113,7 @@ where $N = 170$ is the total number of infected individuals. In the observed dat
 
 ## Likelihood Inference
 
-For likelihood inference, we need to check CI using large number and bootstrap, for p-value, use chi square distribution and empirical p-value
+We employ a likelihood‐based inference method, as recommended by Barnard et al.(196). For likelihood inference, we need to check CI using large number and bootstrap, for p-value, use chi square distribution and empirical p-value.
 
 Set up the likelihood function: 
 
@@ -504,9 +504,11 @@ Practically, these results mean that the vaccine provides strong protection agai
 In summary, the evidence from both statistical methods supports the claim that the vaccine is highly effective. This strong agreement enhances our confidence in the conclusion and supports public health recommendations for the vaccine.
 
 # Bibliography
-2.Gelman, A., Carlin, J. B., Stern, H. S., Dunson, D. B., Vehtari, A., & Rubin, D. B. (2013). Bayesian Data Analysis (3rd ed.). Chapman and Hall/CRC.
+1. Barnard GA, Jenkins GM, Winsten CB. Likelihood inference and time series. J R Stat Soc Ser A Stat Soc. 1962;125(3):321-52. 
 
-3.Venu, A. X. (2024). Highest Posterior Density Intervals As Analogues to Profile Likelihood Ratio Confidence Intervals for Modes of Unimodal Distributions. arXiv preprint arXiv:2412.06528.
+2. Gelman A, Carlin JB, Stern HS, Dunson DB, Vehtari A, Rubin DB. Bayesian Data Analysis. 3rd ed. Chapman and Hall/CRC; 2013. 
+
+3. Venu AX. Highest Posterior Density Intervals As Analogues to Profile Likelihood Ratio Confidence Intervals for Modes of Unimodal Distributions. arXiv Prepr arXiv:2412.06528. 2024.
 
 # Appendix
 
